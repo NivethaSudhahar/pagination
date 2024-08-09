@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagination Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 8px 16px;
+            margin: 0 4px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .pagination button:hover:not(.active) {
+            background-color: #ddd;
+        }
+        .pagination button:disabled {
+            background-color: #eee;
+            cursor: not-allowed;
+        }
+        .content {
+            margin: 20px auto;
+            width: 300px;
+            text-align: center;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div id="contentContainer" class="content">Change 1</div>
+    <div id="paginationContainer" class="pagination"></div>
+
+    <!-- Test Suite -->
+    <script>
+        // Test Suite for Pagination
+        function runTests() {
+            let passed = 0;
+            const tests = [];
+
+            function addTest(description, fn) {
+                tests.push({ description, fn });
+            }
+
+            function assertEqual(actual, expected) {
+                return actual === expected;
+            }
+
+            addTest("Test 1: Initial content should be 'Change 1'", () => {
+                return assertEqual(document.getElementById("contentContainer").innerText, "Change 1");
+            });
+
+            addTest("Test 2: Pagination should create correct number of buttons", () => {
+                return assertEqual(document.querySelectorAll(".pagination button").length, 7); // 5 pages + Next + Previous
+            });
+
+            addTest("Test 3: Clicking 'Change 2' button should change content to 'Change 2'", () => {
+                document.querySelector(".pagination button:nth-child(3)").click();
+                return assertEqual(document.getElementById("contentContainer").innerText, "Change 2");
+            });
+
+            addTest("Test 4: Clicking 'Next' button should change content to 'Change 3'", () => {
+                document.querySelector(".pagination button:nth-child(6)").click();
+                return assertEqual(document.getElementById("contentContainer").innerText, "Change 3");
+            });
+
+            addTest("Test 5: Clicking 'Previous' button should change content back to 'Change 2'", () => {
+                document.querySelector(".pagination button:nth-child(2)").click(); // Previous button
+                return assertEqual(document.getElementById("contentContainer").innerText, "Change 2");
+            });
+
+            tests.forEach(test => {
+                try {
+                    if (test.fn()) {
+                        console.log(`✔️ ${test.description}`);
+                        passed++;
+                    } else {
+                        console.error(`❌ ${test.description}`);
+                    }
+                } catch (error) {
+                    console.error(`❌ ${test.description}`);
+                    console.error(error);
+                }
+            });
+
+            console.log(`\nPassed ${passed} out of ${tests.length} tests.`);
+        }
+
+        window.onload = () => {
+            createPagination(5);
+            runTests();
+        };
+
+        // Create Pagination Function with Next and Previous buttons
+        function createPagination(totalPages) {
+            const paginationContainer = document.getElementById("paginationContainer");
+            const contentContainer = document.getElementById("contentContainer");
+
+            let currentPage = 1;
+
+            // Create Previous button
+            const prevButton = document.createElement("button");
+            prevButton.textContent = "Previous";
+            prevButton.disabled = true;
+            prevButton.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateContent();
+                    updateButtons();
+                }
+            });
+            paginationContainer.appendChild(prevButton);
+
+            // Create page number buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement("button");
+                button.textContent = i;
+                button.addEventListener("click", function () {
+                    currentPage = i;
+                    updateContent();
+                    updateButtons();
+                });
+
+                // Set the first change as active by default
+                if (i === 1) {
+                    button.classList.add("active");
+                }
+
+                paginationContainer.appendChild(button);
+            }
+
+            // Create Next button
+            const nextButton = document.createElement("button");
+            nextButton.textContent = "Next";
+            nextButton.addEventListener("click", () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateContent();
+                    updateButtons();
+                }
+            });
+            paginationContainer.appendChild(nextButton);
+
+            // Update the content and button states
+            function updateContent() {
+                contentContainer.textContent = `Change ${currentPage}`;
+            }
+
+            function updateButtons() {
+                const buttons = paginationContainer.querySelectorAll("button");
+                buttons.forEach(btn => btn.classList.remove("active"));
+                buttons[currentPage].classList.add("active"); // changes start from 1 but buttons array starts from 0
+
+                prevButton.disabled = currentPage === 1;
+                nextButton.disabled = currentPage === totalPages;
+            }
+        }
+    </script>
+</body>
+</html>
